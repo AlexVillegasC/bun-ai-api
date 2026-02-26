@@ -1,7 +1,9 @@
 import Cerebras from '@cerebras/cerebras_cloud_sdk';
 import type { AIService, ChatMessage } from '../types';
 
-const cerebras = new Cerebras();
+const cerebras = new Cerebras({
+  baseURL: process.env.CEREBRAS_BASE_URL ?? 'https://api.cerebras.ai',
+});
 
 export const cerebrasService: AIService = {
   name: 'Cerebras',
