@@ -22,6 +22,25 @@ const server = Bun.serve({
   async fetch(req) {
     const { pathname } = new URL(req.url)
 
+    if (req.method === 'POST' && pathname === '/chat/complete') {
+      const { messages } = await req.json() as { messages: ChatMessage[] };
+      for (const service of services) {
+        try {
+          const stream = await service.chat(messages);
+          let text = '';
+          for await (const chunk of stream) text += chunk;
+          console.log(`/chat/complete served by ${service.name}`);
+          return Response.json({ text });
+        } catch (err) {
+          console.error(`${service.name} failed:`, err);
+        }
+      }
+      return Response.json(
+        { text: "Lo siento, no pude procesar tu solicitud en este momento. Por favor intenta de nuevo más tarde." },
+        { status: 503 }
+      );
+    }
+
     if (req.method === 'POST' && pathname === '/chat') {
       const { messages } = await req.json() as { messages: ChatMessage[] };
       const service = getNextService();
